@@ -24,23 +24,21 @@ class terminal_size
     public:
 
         int get_terminal_rows() {
-            return 20;
             return get_terminal_size().ws_row;
         }
 
         int get_terminal_columns() {
-            return 2;
-            return get_terminal_size().ws_col;
+            return get_terminal_size().ws_col / 2;
         }
 
     private:
 
-    winsize get_terminal_size() {
-        struct winsize size;
-        ioctl(STDOUT_FILENO,TIOCGWINSZ, &size);
+        winsize get_terminal_size() {
+            struct winsize size;
+            ioctl(STDOUT_FILENO,TIOCGWINSZ, &size);
 
-        return size;
-    }
+            return size;
+        }
 
 };
 
@@ -74,14 +72,14 @@ class matrix_cascade_values
         uint32_t last_unicode_char = 0x30FF;
 
         int min_delay = 50;
-        int max_delay = 200;
+        int max_delay = 150;
 
         int min_length_proportion = 4;
 
         std::vector<uint16_t> char_colors = {
             rgb(255, 255, 255),
-            rgb(100, 255, 100),
-            rgb(100, 255, 100),
+            rgb(150, 255, 150),
+            rgb(150, 255, 150),
             rgb(0, 255, 0),
             rgb(0, 255, 0),
             rgb(0, 255, 0),
@@ -210,74 +208,100 @@ class matrix_console
         }
 };
 
-bool is_termbox_unavailable() {
-    return tb_init() < 0;
-}
+class termbox_handler
+{
+    public:
 
-void show_termbox_error() {
-    int error_code = tb_init();
-    std::cerr << "¡Termbox falló! Código: " << error_code << std::endl;
-}
-
-void tb_settings() {
-    tb_select_output_mode(TB_OUTPUT_256);
-    tb_select_input_mode(TB_INPUT_ESC);
-}
-
-bool check_exit_requested() {
-    struct tb_event ev;
-    tb_peek_event(&ev, 100);
-
-    if (ev.type == TB_EVENT_KEY && ev.key == TB_KEY_ESC) {
-        return true;
-    }
-
-    return false;
-}
-
-void enable_matrix_in_column(int x, int num_rows) {
-    matrix_console console;
-
-    while (true) {
-        matrix_cascade cascade = matrix_cascade(x, num_rows);
-
-        while (cascade.visible_chars_head_position < num_rows + cascade.num_visible_chars) {
-            console.update(cascade);
-            cascade.visible_chars_step_forward();
+        bool is_unavailable() {
+            return tb_init() < 0;
         }
-    }
-}
 
-void matrix() {
-    terminal_size terminal;
-    int num_terminal_columns = terminal.get_terminal_columns();
-    int num_terminal_rows = terminal.get_terminal_rows();
+        void show_error() {
+            int error_code = tb_init();
+            std::cerr << "¡Termbox falló! Código: " << error_code << std::endl;
+        }
 
-    for (int i = 0 ; i < num_terminal_columns ; i++) {
-        std::thread matrix_in_column(enable_matrix_in_column, i, num_terminal_rows);
-        matrix_in_column.detach();
-    }
-}
+        void settings() {
+            tb_select_output_mode(TB_OUTPUT_256);
+            tb_select_input_mode(TB_INPUT_ESC);
+        }
+
+        void print() {
+            tb_present();
+        }
+
+        void shutdown() {
+            tb_shutdown();
+        }
+
+        bool check_exit_requested() {
+            struct tb_event ev;
+            tb_peek_event(&ev, 100);
+
+            if (ev.type == TB_EVENT_KEY && ev.key == TB_KEY_ESC) {
+                return true;
+            }
+
+            return false;
+        }
+};
+
+class matrix
+{
+    public:
+
+        int num_columns;
+        int num_rows;
+
+        matrix(int num_columns, int num_rows) {
+
+            this->num_columns = num_columns;
+            this->num_rows = num_rows;
+
+            for (int i = 0 ; i < num_columns ; i++) {
+                std::thread matrix_in_column(enable_column, i * 2, num_rows);
+                matrix_in_column.detach();
+            }
+        }
+
+    private:
+
+        static void enable_column(int x, int num_rows) {
+            matrix_console console;
+
+            while (true) {
+                matrix_cascade cascade = matrix_cascade(x, num_rows);
+
+                while (cascade.visible_chars_head_position < num_rows + cascade.num_visible_chars) {
+                    console.update(cascade);
+                    cascade.visible_chars_step_forward();
+                }
+            }
+        }
+};
 
 int main()
 {
-    if (is_termbox_unavailable()) {
-        show_termbox_error();
+    termbox_handler termbox;
+    terminal_size terminal;
+
+    if (termbox.is_unavailable()) {
+        termbox.show_error();
         return EXIT_FAILURE;
     }
 
-    tb_settings();
+    termbox.settings();
 
-    matrix();
+    matrix(terminal.get_terminal_columns(), terminal.get_terminal_rows());
 
     bool exit_requested = false;
 
     while (!exit_requested) {
-        tb_present();
-        exit_requested = check_exit_requested();
+        termbox.print();
+        exit_requested = termbox.check_exit_requested();
     }
 
-    tb_shutdown();
+    termbox.shutdown();
 
     return EXIT_SUCCESS;
 }
