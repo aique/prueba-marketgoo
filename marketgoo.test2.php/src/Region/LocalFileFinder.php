@@ -2,9 +2,9 @@
 
 namespace MarketgooApp\Region;
 
-class WebServiceFinder implements RegionFinder
+class LocalFileFinder implements RegionFinder
 {
     public function getRegion($ip) {
-        return 'Matalascañas';
+        return 'Mieres';
     }
 }

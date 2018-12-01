@@ -1,18 +1,19 @@
 <?php
 
-namespace MarketgooTest\Model\Aggregation;
+namespace MarketgooApp\Model\Aggregation;
 
-use MarketgooTest\Region\RegionFinderFactory;
+use MarketgooApp\Region\RegionFinderFactory;
 
 class IpRegionAggregator implements Aggregator
 {
     const IP_FIELD_NAME = 'ip';
     const IP_REGION_FIELD_NAME = 'ip_region';
 
-    private $strategy;
+    /** @var RegionFinderFactory */
+    private $regionFinderFactory;
 
-    public function __construct($strategy) {
-        $this->strategy = $strategy;
+    public function __construct(RegionFinderFactory $regionFinderFactory) {
+        $this->regionFinderFactory = $regionFinderFactory;
     }
 
     public function aggregate($user) {
@@ -36,8 +37,7 @@ class IpRegionAggregator implements Aggregator
 
     private function setIpRegion($user) {
         if ($this->hasIp($user)) {
-            $regionFinderFactory = new RegionFinderFactory();
-            $regionFinder = $regionFinderFactory->create($this->strategy);
+            $regionFinder = $this->regionFinderFactory->create();
             $user[self::IP_REGION_FIELD_NAME] = $regionFinder->getRegion($user[self::IP_FIELD_NAME]);
         }
 

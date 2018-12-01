@@ -1,6 +1,6 @@
 <?php
 
-namespace MarketgooTest\Model\Aggregation;
+namespace MarketgooApp\Model\Aggregation;
 
 interface Aggregator
 {

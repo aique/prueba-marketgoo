@@ -1,6 +1,6 @@
 <?php
 
-namespace MarketgooTest\Model;
+namespace MarketgooApp\Model;
 
 class UserRepository
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace MarketgooTest\Region;
+namespace MarketgooApp\Region;
 
 interface RegionFinder
 {
