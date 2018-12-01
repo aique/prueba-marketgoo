@@ -10,6 +10,9 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
 
+use MarketgooTest\Model\UserRepository;
+use MarketgooTest\Model\Aggregation\IpRegionAggregator;
+
 // Datos estáticos que modelan los resultados de la consulta GraphQL
 $users = [
     1 => ["id" => 1, "name" => "Sergio Palma", "ip" => "188.223.227.125"],
@@ -23,7 +26,8 @@ $graphql_user_type = new ObjectType([
     "fields" => [
         "id" => Type::int(),
         "name" => Type::string(),
-        "ip" => Type::string()
+        "ip" => Type::string(),
+        "ip_region" => Type::string(),
     ]
 ]);
 
@@ -33,6 +37,9 @@ $app = new Slim\App();
 $app->map(["GET", "POST"], "/graphql", function(Request $request, Response $response) {
     global $users, $graphql_user_type;
     $debug = \GraphQL\Error\Debug::INCLUDE_DEBUG_MESSAGE | \GraphQL\Error\Debug::INCLUDE_TRACE;
+
+    $userRepository = new UserRepository([new IpRegionAggregator($request->getAttribute('strategy'))]);
+
     try {
         $graphQLServer = new \GraphQL\Server\StandardServer([
             "schema" => new Schema([
@@ -44,16 +51,16 @@ $app->map(["GET", "POST"], "/graphql", function(Request $request, Response $resp
                             "args" => [
                                 "id" => Type::nonNull(Type::int())
                             ],
-                            "resolve" => function ($rootValue, $args) use ($users) {
+                            "resolve" => function ($rootValue, $args) use ($users, $userRepository) {
                                 return isset($users[intval($args["id"])])
-                                    ? $users[intval($args["id"])]
+                                    ? $userRepository->getUser($users[intval($args["id"])])
                                     : null;
                             }
                         ],
                         "users" => [
                             "type" => Type::listOf($graphql_user_type),
-                            "resolve" => function() use ($users) {
-                                return $users;
+                            "resolve" => function() use ($users, $userRepository) {
+                                return $userRepository->getCollection($users);
                             }
                         ]
                     ]
