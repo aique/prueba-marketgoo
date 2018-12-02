@@ -10,10 +10,11 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
 
-use MarketgooApp\Model\UserRepository;
-use MarketgooApp\Model\Aggregation\IpRegionAggregator;
+use MarketgooApp\Model\User\UserRepository;
+use MarketgooApp\Model\User\Aggregation\IpRegionAggregator;
 use MarketgooApp\Request\RequestQueryParameter;
 use MarketgooApp\Region\RegionFinderFactory;
+use MarketgooApp\Region\Strategy\StrategyFactory;
 
 // Datos estáticos que modelan los resultados de la consulta GraphQL
 $users = [
@@ -40,9 +41,9 @@ $app->map(["GET", "POST"], "/graphql", function(Request $request, Response $resp
     global $users, $graphql_user_type;
     $debug = \GraphQL\Error\Debug::INCLUDE_DEBUG_MESSAGE | \GraphQL\Error\Debug::INCLUDE_TRACE;
 
-    $requestQueryParameter = new RequestQueryParameter($request);
-    $strategy = $requestQueryParameter->getQueryParam('strategy');
-    $userRepository = new UserRepository([new IpRegionAggregator(new RegionFinderFactory($strategy))]);
+    $strategyFactory = new StrategyFactory($request);
+    $regionFinderFactory = new RegionFinderFactory($strategyFactory->create());
+    $userRepository = new UserRepository([new IpRegionAggregator($regionFinderFactory)]);
 
     try {
         $graphQLServer = new \GraphQL\Server\StandardServer([

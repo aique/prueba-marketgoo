@@ -2,20 +2,25 @@
 
 namespace MarketgooTest\Region;
 
-use MarketgooApp\Region\LocalFileFinder;
 use MarketgooApp\Region\RegionFinderFactory;
-use MarketgooApp\Region\WebServiceFinder;
+use MarketgooApp\Region\Strategy\Database\DatabaseFinder;
+use MarketgooApp\Region\Strategy\DatabaseStrategy;
+use MarketgooApp\Region\Strategy\LocalFile\LocalFileFinder;
+use MarketgooApp\Region\Strategy\LocalFileStrategy;
+use MarketgooApp\Region\Strategy\RegionFinderStrategy;
+use MarketgooApp\Region\Strategy\WebService\WebServiceFinder;
+use MarketgooApp\Region\Strategy\WebServiceStrategy;
 use PHPUnit\Framework\TestCase;
 
 class RegionFinderFactoryTest extends TestCase
 {
     public function testCreate() {
-        $this->assertStrategy(RegionFinderFactory::WEB_SERVICE_STRATEGY, WebServiceFinder::class);
-        $this->assertStrategy(RegionFinderFactory::LOCAL_FILE_STRATEGY, LocalFileFinder::class);
-        $this->assertStrategy('wrong_strategy', LocalFileFinder::class);
+        $this->assertStrategy(new WebServiceStrategy(null), WebServiceFinder::class);
+        $this->assertStrategy(new LocalFileStrategy(), LocalFileFinder::class);
+        $this->assertStrategy(new DatabaseStrategy(), DatabaseFinder::class);
     }
 
-    private function assertStrategy($strategy, $instanceOfExpected) {
+    private function assertStrategy(RegionFinderStrategy $strategy, $instanceOfExpected) {
         $factory = new RegionFinderFactory($strategy);
         $this->assertInstanceOf($instanceOfExpected, $factory->create());
     }

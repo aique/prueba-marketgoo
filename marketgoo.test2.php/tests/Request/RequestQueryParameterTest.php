@@ -3,8 +3,9 @@
 namespace MarketgooTest\Request;
 
 use MarketgooApp\Region\RegionFinderFactory;
-use PHPUnit\Framework\TestCase;
+use MarketgooApp\Region\Strategy\RegionFinderStrategy;
 use MarketgooApp\Request\RequestQueryParameter;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 
 class RequestQueryParameterTest extends TestCase
@@ -16,14 +17,14 @@ class RequestQueryParameterTest extends TestCase
         $this->setUpQueryParameter([]);
 
         $this->assertEquals($this->requestQueryParameter->getQueryParam('strategy'), null);
-        $this->assertEquals($this->requestQueryParameter->getQueryParam('strategy', RegionFinderFactory::WEB_SERVICE_STRATEGY), RegionFinderFactory::WEB_SERVICE_STRATEGY);
+        $this->assertEquals($this->requestQueryParameter->getQueryParam('strategy', RegionFinderStrategy::WEB_SERVICE_STRATEGY), RegionFinderStrategy::WEB_SERVICE_STRATEGY);
     }
 
     public function testDefaultGetQueryParam() {
-        $this->setUpQueryParameter(['strategy' => RegionFinderFactory::LOCAL_FILE_STRATEGY]);
+        $this->setUpQueryParameter(['strategy' => RegionFinderStrategy::LOCAL_FILE_STRATEGY]);
 
-        $this->assertEquals($this->requestQueryParameter->getQueryParam('strategy'), RegionFinderFactory::LOCAL_FILE_STRATEGY);
-        $this->assertEquals($this->requestQueryParameter->getQueryParam('strategy', RegionFinderFactory::WEB_SERVICE_STRATEGY), RegionFinderFactory::LOCAL_FILE_STRATEGY);
+        $this->assertEquals($this->requestQueryParameter->getQueryParam('strategy'), RegionFinderStrategy::LOCAL_FILE_STRATEGY);
+        $this->assertEquals($this->requestQueryParameter->getQueryParam('strategy', RegionFinderStrategy::WEB_SERVICE_STRATEGY), RegionFinderStrategy::LOCAL_FILE_STRATEGY);
     }
 
     private function setUpQueryParameter(array $requestQueryParams) {

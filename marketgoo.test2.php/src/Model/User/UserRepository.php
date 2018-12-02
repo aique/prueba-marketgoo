@@ -1,6 +1,6 @@
 <?php
 
-namespace MarketgooApp\Model;
+namespace MarketgooApp\Model\User;
 
 class UserRepository
 {
@@ -17,8 +17,8 @@ class UserRepository
     }
 
     public function getCollection($users) {
-        foreach ($users as &$user) {
-            $this->applyAggregators($user);
+        foreach ($users as $userKey => $userData) {
+            $users[$userKey] = $this->applyAggregators($userData);
         }
 
         return $users;

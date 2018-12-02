@@ -1,6 +1,6 @@
 <?php
 
-namespace MarketgooApp\Model\Aggregation;
+namespace MarketgooApp\Model\User\Aggregation;
 
 use MarketgooApp\Region\RegionFinderFactory;
 
