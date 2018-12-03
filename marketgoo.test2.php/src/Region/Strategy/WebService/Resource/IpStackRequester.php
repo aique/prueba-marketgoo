@@ -2,13 +2,30 @@
 
 namespace MarketgooApp\Region\Strategy\WebService\Resource;
 
-use MarketgooApp\Model\Region\Region;
-use MarketgooApp\Region\Strategy\WebService\Requester;
+use GuzzleHttp\Client;
+use MarketgooApp\Region\Strategy\WebService\WebServiceRequesterImp;
 
-class IpStackRequester implements Requester
+class IpStackRequester extends WebServiceRequesterImp
 {
-    function request($ip) {
-        return new Region('Matalascañas', 'Huelva', 'Spain');
+    const CONF_NAME = 'ip_stack';
+
+    public function __construct() {
+        $this->parser = new IpStackResponseParser();
     }
 
+    public function makeRequest($ip) {
+        $client = new Client();
+
+        $response = $client->request('GET', $this->url.'/'.$ip, [
+            'query' => [
+                'access_key' => $this->key
+            ]
+        ]);
+
+        return $response;
+    }
+
+    public function getConfName() {
+        return self::CONF_NAME;
+    }
 }

@@ -1,14 +1,24 @@
 <?php
 
-namespace MarketgooApp\Region\WebService\Resource;
+namespace MarketgooApp\Region\Strategy\WebService\Resource;
 
-use MarketgooApp\Model\Region\Region;
-use MarketgooApp\Region\WebService\Requester;
+use GuzzleHttp\Psr7\Response;
+use MarketgooApp\Region\Strategy\WebService\WebServiceRequesterImp;
 
-class DbIpRequester implements Requester
+// TODO esta clase no está completa, sirve como ejemplo si se deseara utilizar un servicio diferente
+class DbIpRequester extends WebServiceRequesterImp
 {
-    function request($ip) {
-        return new Region('Matalascañas', 'Huelva', 'Spain');
+    const CONF_NAME = 'db_ip';
+
+    public function __construct() {
+        $this->parser = new DbIpResponseParser();
     }
 
+    public function makeRequest($ip) {
+        return new Response();
+    }
+
+    public function getConfName() {
+        return self::CONF_NAME;
+    }
 }

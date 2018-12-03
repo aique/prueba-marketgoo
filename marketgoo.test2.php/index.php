@@ -4,17 +4,15 @@
  */
 require __DIR__."/vendor/autoload.php";
 
-use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Http\Message\ResponseInterface as Response;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
-
-use MarketgooApp\Model\User\UserRepository;
 use MarketgooApp\Model\User\Aggregation\IpRegionAggregator;
-use MarketgooApp\Request\RequestQueryParameter;
+use MarketgooApp\Model\User\UserRepository;
 use MarketgooApp\Region\RegionFinderFactory;
 use MarketgooApp\Region\Strategy\StrategyFactory;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 
 // Datos estáticos que modelan los resultados de la consulta GraphQL
 $users = [

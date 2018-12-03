@@ -2,8 +2,9 @@
 
 namespace MarketgooApp\Region\Strategy\WebService;
 
+use MarketgooApp\Conf\ConfReader;
+use MarketgooApp\Region\Strategy\WebService\Resource\DbIpRequester;
 use MarketgooApp\Region\Strategy\WebService\Resource\IpStackRequester;
-use MarketgooApp\Region\WebService\Resource\DbIpRequester;
 
 class RequesterFactory
 {
@@ -21,12 +22,25 @@ class RequesterFactory
     public function create() {
         switch ($this->resource) {
             case self::IP_STACK_REQUESTER:
-                return new IpStackRequester();
+                return $this->createRequester(new IpStackRequester());
             case self::DB_IP_REQUESTER:
-                return new DbIpRequester();
+                return $this->createRequester(new DbIpRequester());
             default:
-                return new IpStackRequester();
+                return $this->createRequester(new IpStackRequester());
         }
+    }
+
+    private function createRequester(WebServiceRequesterImp $requester) {
+        $config = $this->readConfig($requester->getConfName());
+        $requester->setUrl($config[WebServiceRequesterImp::API_URL_CONF_NAME]);
+        $requester->setKey($config[WebServiceRequesterImp::CONF_NAME]);
+
+        return $requester;
+    }
+
+    private function readConfig($name) {
+        $confReader = new ConfReader();
+        return $confReader->getValue($name);
     }
 
     public function invalidResource($resource) {
