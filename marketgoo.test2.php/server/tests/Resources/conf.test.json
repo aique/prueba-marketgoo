@@ -1,0 +1,6 @@
+{
+  "web_service": {
+    "url": "http://api.ipstack.com",
+    "key": "12345qwerty"
+  }
+}
